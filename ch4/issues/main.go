@@ -9,22 +9,53 @@ package main
 
 import (
 	"fmt"
+	"gopl.io/ch4/github"
 	"log"
 	"os"
-
-	"gopl.io/ch4/github"
+	"time"
 )
 
-//!+
+// !+
 func main() {
 	result, err := github.SearchIssues(os.Args[1:])
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf("%d issues:\n", result.TotalCount)
+
+	var lessThenMonth []github.Issue
+	var lessThenYear []github.Issue
+	var moreThenYear []github.Issue
+	today := time.Now()
+	prevMonth := today.AddDate(0, -1, 0)
+	prevYear := today.AddDate(-1, 0, 0)
+
 	for _, item := range result.Items {
-		fmt.Printf("#%-5d %9.9s %.55s\n",
-			item.Number, item.User.Login, item.Title)
+		if item.CreatedAt.After(prevMonth) {
+			lessThenMonth = append(lessThenMonth, *item)
+		} else if item.CreatedAt.After(prevYear) {
+			lessThenMonth = append(lessThenYear, *item)
+		} else {
+			moreThenYear = append(moreThenYear, *item)
+		}
+	}
+
+	fmt.Println("Less then month:")
+	for _, item := range lessThenMonth {
+		fmt.Printf("#%-5d %9.9s %.55s %s\n",
+			item.Number, item.User.Login, item.Title, item.CreatedAt)
+	}
+
+	fmt.Println("Less then year:")
+	for _, item := range lessThenYear {
+		fmt.Printf("#%-5d %9.9s %.55s %s\n",
+			item.Number, item.User.Login, item.Title, item.CreatedAt)
+	}
+
+	fmt.Println("More then year:")
+	for _, item := range moreThenYear {
+		fmt.Printf("#%-5d %9.9s %.55s %s\n",
+			item.Number, item.User.Login, item.Title, item.CreatedAt)
 	}
 }
 

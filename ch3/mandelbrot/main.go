@@ -11,8 +11,9 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"log"
 	"math/cmplx"
-	"os"
+	"net/http"
 )
 
 func main() {
@@ -21,17 +22,22 @@ func main() {
 		width, height          = 1024, 1024
 	)
 
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
-	for py := 0; py < height; py++ {
-		y := float64(py)/height*(ymax-ymin) + ymin
-		for px := 0; px < width; px++ {
-			x := float64(px)/width*(xmax-xmin) + xmin
-			z := complex(x, y)
-			// Image point (px, py) represents complex value z.
-			img.Set(px, py, mandelbrot(z))
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		img := image.NewRGBA(image.Rect(0, 0, width, height))
+		for py := 0; py < height; py++ {
+			y := float64(py)/height*(ymax-ymin) + ymin
+			for px := 0; px < width; px++ {
+				x := float64(px)/width*(xmax-xmin) + xmin
+				z := complex(x, y)
+				// Image point (px, py) represents complex value z.
+				img.Set(px, py, mandelbrot(z))
+			}
 		}
+		png.Encode(w, img) // NOTE: ignoring errors
 	}
-	png.Encode(os.Stdout, img) // NOTE: ignoring errors
+
+	http.HandleFunc("/", handler)
+	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
 
 func mandelbrot(z complex128) color.Color {
@@ -69,8 +75,9 @@ func sqrt(z complex128) color.Color {
 // f(x) = x^4 - 1
 //
 // z' = z - f(z)/f'(z)
-//    = z - (z^4 - 1) / (4 * z^3)
-//    = z - (z - 1/z^3) / 4
+//
+//	= z - (z^4 - 1) / (4 * z^3)
+//	= z - (z - 1/z^3) / 4
 func newton(z complex128) color.Color {
 	const iterations = 37
 	const contrast = 7

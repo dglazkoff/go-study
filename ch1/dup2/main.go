@@ -12,8 +12,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
 
+// Modify dup2 to print the names of all files in which each duplicated line occurs.
 func main() {
 	counts := make(map[string]int)
 	files := os.Args[1:]
@@ -40,7 +42,9 @@ func main() {
 func countLines(f *os.File, counts map[string]int) {
 	input := bufio.NewScanner(f)
 	for input.Scan() {
-		counts[input.Text()]++
+		for _, line := range strings.Split(input.Text(), "\n") {
+			counts[line]++
+		}
 	}
 	// NOTE: ignoring potential errors from input.Err()
 }

@@ -17,13 +17,15 @@ import (
 )
 
 func main() {
-	counts := make(map[rune]int)    // counts of Unicode characters
-	var utflen [utf8.UTFMax + 1]int // count of lengths of UTF-8 encodings
-	invalid := 0                    // count of invalid UTF-8 characters
+	counts := make(map[rune]int)
+	categories := make(map[string]int) // counts of Unicode characters
+	var utflen [utf8.UTFMax + 1]int    // count of lengths of UTF-8 encodings
+	invalid := 0                       // count of invalid UTF-8 characters
 
 	in := bufio.NewReader(os.Stdin)
 	for {
 		r, n, err := in.ReadRune() // returns rune, nbytes, error
+
 		if err == io.EOF {
 			break
 		}
@@ -31,6 +33,11 @@ func main() {
 			fmt.Fprintf(os.Stderr, "charcount: %v\n", err)
 			os.Exit(1)
 		}
+
+		if r == 10 {
+			break
+		}
+
 		if r == unicode.ReplacementChar && n == 1 {
 			invalid++
 			continue
@@ -50,6 +57,19 @@ func main() {
 	}
 	if invalid > 0 {
 		fmt.Printf("\n%d invalid UTF-8 characters\n", invalid)
+	}
+
+	for name, table := range unicode.Categories {
+		for r, c := range counts {
+			if unicode.Is(table, r) {
+				categories[name] += c
+			}
+		}
+	}
+
+	fmt.Print("\nname\tcount\n")
+	for n, c := range categories {
+		fmt.Printf("%s\t%d\n", n, c)
 	}
 }
 

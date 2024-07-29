@@ -20,6 +20,8 @@ func SearchIssues(terms []string) (*IssuesSearchResult, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// fmt.Printf("%s\n", IssuesURL+"?q="+q)
 	//!-
 	// For long-term stability, instead of http.Get, use the
 	// variant below which adds an HTTP request header indicating
@@ -40,6 +42,10 @@ func SearchIssues(terms []string) (*IssuesSearchResult, error) {
 		resp.Body.Close()
 		return nil, fmt.Errorf("search query failed: %s", resp.Status)
 	}
+
+	//bodyBytes, err := io.ReadAll(resp.Body)
+	//bodyString := string(bodyBytes)
+	//fmt.Println(bodyString)
 
 	var result IssuesSearchResult
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {

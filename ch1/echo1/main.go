@@ -10,15 +10,25 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
+	"time"
 )
 
 func main() {
 	var s, sep string
+	start := time.Now()
 	for i := 1; i < len(os.Args); i++ {
 		s += sep + os.Args[i]
 		sep = " "
 	}
-	fmt.Println(s)
+	end := time.Now()
+	fmt.Println(end.Sub(start))
+
+	start = time.Now()
+	fmt.Println(strings.Join(os.Args[1:], " "))
+	end = time.Now()
+
+	fmt.Println(end.Sub(start))
 }
 
 //!-
